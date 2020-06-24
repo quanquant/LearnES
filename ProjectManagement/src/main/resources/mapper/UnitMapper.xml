@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjtl.projectmanagement.mapper.UnitMapper">
+  <resultMap id="BaseResultMap" type="com.bjtl.projectmanagement.model.UnitDO">
+    <id column="UNIT_ID" jdbcType="DECIMAL" property="unitId" />
+    <result column="UNIT_NAME" jdbcType="VARCHAR" property="unitName" />
+    <result column="UNIT_PARENT_ID" jdbcType="DECIMAL" property="unitParentId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    UNIT_ID, UNIT_NAME, UNIT_PARENT_ID
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from PM_UNIT
+    where UNIT_ID = #{unitId,jdbcType=DECIMAL}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="integer">
+    delete from PM_UNIT
+    where UNIT_ID = #{unitId,jdbcType=DECIMAL}
+  </delete>
+  <insert id="insert" parameterType="com.bjtl.projectmanagement.model.UnitDO">
+    insert into PM_UNIT (UNIT_ID, UNIT_NAME, UNIT_PARENT_ID
+      )
+    values (#{unitId,jdbcType=DECIMAL}, #{unitName,jdbcType=VARCHAR}, #{unitParentId,jdbcType=DECIMAL}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.bjtl.projectmanagement.model.UnitDO">
+    insert into PM_UNIT
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="unitId != null">
+        UNIT_ID,
+      </if>
+      <if test="unitName != null">
+        UNIT_NAME,
+      </if>
+      <if test="unitParentId != null">
+        UNIT_PARENT_ID,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="unitId != null">
+        #{unitId,jdbcType=DECIMAL},
+      </if>
+      <if test="unitName != null">
+        #{unitName,jdbcType=VARCHAR},
+      </if>
+      <if test="unitParentId != null">
+        #{unitParentId,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bjtl.projectmanagement.model.UnitDO">
+    update PM_UNIT
+    <set>
+      <if test="unitName != null">
+        UNIT_NAME = #{unitName,jdbcType=VARCHAR},
+      </if>
+      <if test="unitParentId != null">
+        UNIT_PARENT_ID = #{unitParentId,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where UNIT_ID = #{unitId,jdbcType=DECIMAL}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bjtl.projectmanagement.model.UnitDO">
+    update PM_UNIT
+    set UNIT_NAME = #{unitName,jdbcType=VARCHAR},
+      UNIT_PARENT_ID = #{unitParentId,jdbcType=DECIMAL}
+    where UNIT_ID = #{unitId,jdbcType=DECIMAL}
+  </update>
+  <select id="listTreeNode" parameterType="hashmap" resultType="com.bjtl.projectmanagement.model.TreeNodes">
+    select
+        UNIT_ID id,
+        UNIT_NAME text,
+        UNIT_PARENT_ID parentId
+        FROM PM_UNIT
+        WHERE UNIT_PARENT_ID = #{id}
+  </select>
+</mapper>

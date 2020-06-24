@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjtl.projectmanagement.mapper.ProjectMapper">
+    <resultMap id="BaseResultMap" type="com.bjtl.projectmanagement.model.ProjectDO">
+        <id column="PROJECT_ID" jdbcType="DECIMAL" property="projectId"/>
+        <result column="UNIT_ID" jdbcType="DECIMAL" property="unitId"/>
+        <result column="BUILD_ID" jdbcType="DECIMAL" property="buildId"/>
+        <result column="PROJECT_NAME" jdbcType="VARCHAR" property="projectName"/>
+        <result column="PLAN_VALUE" jdbcType="DECIMAL" property="planValue"/>
+        <result column="PROJECT_DATE" jdbcType="TIMESTAMP" property="projectDate"/>
+    </resultMap>
+    <resultMap id="BaseResultMap2" type="com.bjtl.projectmanagement.model.ProjectVO">
+        <id column="PROJECT_ID" jdbcType="DECIMAL" property="projectId"/>
+        <result column="UNIT_NAME" jdbcType="VARCHAR" property="unitName"/>
+        <result column="BUILD_NAME" jdbcType="VARCHAR" property="buildName"/>
+        <result column="PROJECT_NAME" jdbcType="VARCHAR" property="projectName"/>
+        <result column="PLAN_VALUE" jdbcType="DECIMAL" property="planValue"/>
+        <result column="PROJECT_DATE" jdbcType="TIMESTAMP" property="projectDate"/>
+        <result column="UNIT_ID" jdbcType="TIMESTAMP" property="unitId"/>
+        <result column="BUILD_ID" jdbcType="TIMESTAMP" property="buildId"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    PROJECT_ID, UNIT_ID, BUILD_ID, PROJECT_NAME, PLAN_VALUE, PROJECT_DATE
+  </sql>
+    <sql id="Base_Column_List2">
+    PROJECT_ID, PM_UNIT.UNIT_NAME,PM_UNIT.UNIT_ID, PM_BUILD_PROPERTIES.BUILD_NAME,PM_BUILD_PROPERTIES.BUILD_ID, PROJECT_NAME, PLAN_VALUE, PROJECT_DATE
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_PROJECT
+        where PROJECT_ID = #{projectId,jdbcType=DECIMAL}
+    </select>
+    <select id="selectByProjectName" parameterType="string" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_PROJECT
+        where PROJECT_NAME = #{projectName,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="integer">
+    delete from PM_PROJECT
+    where PROJECT_ID = #{projectId,jdbcType=DECIMAL}
+  </delete>
+    <insert id="insert" parameterType="com.bjtl.projectmanagement.model.ProjectDO">
+        <selectKey keyProperty="projectId" keyColumn="PROJECT_ID" resultType="integer" order="BEFORE">
+            SELECT SEQ_PROJECT.nextval from DUAL
+            -- select nvl(max(PROJECT_ID),0)+1 from SEQ_PROJECT
+        </selectKey>
+        insert into PM_PROJECT (PROJECT_ID, UNIT_ID, BUILD_ID,
+        PROJECT_NAME, PLAN_VALUE, PROJECT_DATE
+        )
+        values (#{projectId}, #{unitId,jdbcType=DECIMAL}, #{buildId,jdbcType=DECIMAL},
+        #{projectName,jdbcType=VARCHAR}, #{planValue,jdbcType=DECIMAL}, #{projectDate,jdbcType=TIMESTAMP}
+        )
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.bjtl.projectmanagement.model.ProjectDO">
+        <selectKey keyProperty="projectId" keyColumn="PROJECT_ID" resultType="integer" order="BEFORE">
+            SELECT SEQ_PROJECT.nextval from DUAL
+            -- select nvl(max(PROJECT_ID),0)+1 from SEQ_PROJECT
+        </selectKey>
+        insert into PM_PROJECT
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            PROJECT_ID,
+            <!-- <if test="projectId != null">
+                 PROJECT_ID,
+             </if>-->
+            <if test="unitId != null">
+                UNIT_ID,
+            </if>
+            <if test="buildId != null">
+                BUILD_ID,
+            </if>
+            <if test="projectName != null">
+                PROJECT_NAME,
+            </if>
+            <if test="planValue != null">
+                PLAN_VALUE,
+            </if>
+            <if test="projectDate != null">
+                PROJECT_DATE,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{projectId,jdbcType=DECIMAL},
+            <!--<if test="projectId != null">
+                #{projectId,jdbcType=DECIMAL},
+            </if>-->
+            <if test="unitId != null">
+                #{unitId,jdbcType=DECIMAL},
+            </if>
+            <if test="buildId != null">
+                #{buildId,jdbcType=DECIMAL},
+            </if>
+            <if test="projectName != null">
+                #{projectName,jdbcType=VARCHAR},
+            </if>
+            <if test="planValue != null">
+                #{planValue,jdbcType=DECIMAL},
+            </if>
+            <if test="projectDate != null">
+                #{projectDate,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.bjtl.projectmanagement.model.ProjectDO">
+        update PM_PROJECT
+        <set>
+            <if test="unitId != null">
+                UNIT_ID = #{unitId,jdbcType=DECIMAL},
+            </if>
+            <if test="buildId != null">
+                BUILD_ID = #{buildId,jdbcType=DECIMAL},
+            </if>
+            <if test="projectName != null">
+                PROJECT_NAME = #{projectName,jdbcType=VARCHAR},
+            </if>
+            <if test="planValue != null">
+                PLAN_VALUE = #{planValue,jdbcType=DECIMAL},
+            </if>
+            <if test="projectDate != null">
+                PROJECT_DATE = #{projectDate,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where PROJECT_ID = #{projectId,jdbcType=DECIMAL}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.bjtl.projectmanagement.model.ProjectDO">
+    update PM_PROJECT
+    set UNIT_ID = #{unitId,jdbcType=DECIMAL},
+      BUILD_ID = #{buildId,jdbcType=DECIMAL},
+      PROJECT_NAME = #{projectName,jdbcType=VARCHAR},
+      PLAN_VALUE = #{planValue,jdbcType=DECIMAL},
+      PROJECT_DATE = #{projectDate,jdbcType=TIMESTAMP}
+    where PROJECT_ID = #{projectId,jdbcType=DECIMAL}
+  </update>
+    <select id="listProject" parameterType="hashmap" resultMap="BaseResultMap2">
+        select
+        <include refid="Base_Column_List2"/>
+        from PM_PROJECT INNER join PM_BUILD_PROPERTIES ON PM_PROJECT.BUILD_ID = PM_BUILD_PROPERTIES.BUILD_ID
+        INNER join PM_UNIT ON PM_PROJECT.UNIT_ID = PM_UNIT.UNIT_ID
+        <where>
+            <if test="projectId!=null and projectId!=''">
+                and PROJECT_ID=#{projectId,jdbcType=DECIMAL}
+            </if>
+            <if test="projectName!=null and projectName!=''">
+                and PROJECT_NAME like CONCAT(CONCAT('%',#{projectName}),'%')
+            </if>
+            <if test="projectDate!=null and projectDate!=''">
+                and to_char(PROJECT_DATE,'yyyy')=#{projectDate}
+            </if>
+            <if test="unitId!=null and unitId!=0">
+                and PM_PROJECT.UNIT_ID=#{unitId,jdbcType=DECIMAL}
+            </if>
+            <if test="buildId!=null and buildId!=0">
+                and PM_PROJECT.BUILD_ID=#{buildId,jdbcType=DECIMAL}
+            </if>
+        </where>
+        order by PROJECT_DATE desc
+    </select>
+
+    <delete id="deleteBatchProjects" parameterType="integer">
+        delete from PM_PROJECT where PROJECT_ID in
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+</mapper>

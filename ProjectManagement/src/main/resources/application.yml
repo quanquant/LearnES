@@ -1,0 +1,24 @@
+# redis的配置
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    jedis:
+      pool:
+        max-active: 25
+        max-idle: 20
+        min-idle: 10
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    username: scott
+    password: scott
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+server:
+  servlet:
+    context-path: /ProjectManagement
+  port: 8080
+  tomcat:
+    max-http-post-size: 50000000
+mybatis:
+  mapper-locations:
+  - classpath:mapper/*.xml

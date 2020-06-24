@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjtl.projectmanagement.mapper.BuildPropertiesMapper">
+    <resultMap id="BaseResultMap" type="com.bjtl.projectmanagement.model.BuildProperties">
+        <id column="BUILD_ID" jdbcType="DECIMAL" property="buildId"/>
+        <result column="BUILD_NAME" jdbcType="VARCHAR" property="buildName"/>
+    </resultMap>
+    <resultMap id="BaseResultMap2" type="com.bjtl.projectmanagement.model.BuildPropertiesVO">
+        <id column="BUILD_ID" jdbcType="DECIMAL" property="id"/>
+        <result column="BUILD_NAME" jdbcType="VARCHAR" property="text"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    BUILD_ID, BUILD_NAME
+  </sql>
+    <sql id="Base_Column_List2">
+    BUILD_ID id, BUILD_NAME text
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from PM_BUILD_PROPERTIES
+        where BUILD_ID = #{buildId,jdbcType=DECIMAL}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="integer">
+    delete from PM_BUILD_PROPERTIES
+    where BUILD_ID = #{buildId,jdbcType=DECIMAL}
+  </delete>
+    <insert id="insert" parameterType="com.bjtl.projectmanagement.model.BuildProperties">
+    insert into PM_BUILD_PROPERTIES (BUILD_ID, BUILD_NAME)
+    values (#{buildId,jdbcType=DECIMAL}, #{buildName,jdbcType=VARCHAR})
+  </insert>
+    <insert id="insertSelective" parameterType="com.bjtl.projectmanagement.model.BuildProperties">
+        insert into PM_BUILD_PROPERTIES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="buildId != null">
+                BUILD_ID,
+            </if>
+            <if test="buildName != null">
+                BUILD_NAME,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="buildId != null">
+                #{buildId,jdbcType=DECIMAL},
+            </if>
+            <if test="buildName != null">
+                #{buildName,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.bjtl.projectmanagement.model.BuildProperties">
+        update PM_BUILD_PROPERTIES
+        <set>
+            <if test="buildName != null">
+                BUILD_NAME = #{buildName,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where BUILD_ID = #{buildId,jdbcType=DECIMAL}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.bjtl.projectmanagement.model.BuildProperties">
+    update PM_BUILD_PROPERTIES
+    set BUILD_NAME = #{buildName,jdbcType=VARCHAR}
+    where BUILD_ID = #{buildId,jdbcType=DECIMAL}
+  </update>
+    <select id="listBuildProperties" resultMap="BaseResultMap2">
+        select
+
+        <include refid="Base_Column_List"/>
+        from PM_BUILD_PROPERTIES
+    </select>
+</mapper>
