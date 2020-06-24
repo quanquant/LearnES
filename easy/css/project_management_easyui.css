@@ -1,0 +1,140 @@
+@charset "utf-8";
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body,
+ul,
+li,
+ol,
+dl,
+dd,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    border: none;
+}
+
+ol,
+ul {
+    list-style: none;
+}
+
+.clearfixed:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.FL {
+    float: left;
+}
+
+.FR {
+    float: right;
+}
+
+
+/* start conditions and operators */
+
+#operation {
+    width: 100%;
+    margin: 10px auto;
+}
+
+/* .conditions {
+    width: 75%;
+} */
+
+.conditions .condition label {
+    font-size: 14px;
+    line-height: 28px;
+    padding-left: 20px;
+}
+
+.conditions .condition:nth-child(1) label {
+    padding: 0;
+}
+
+/* .buttons {
+    width: 320px;
+} */
+
+.buttons .btn {
+    font-size: 14px;
+    padding: 0 10px;
+    background: #009688;
+    color: #fff;
+}
+
+#searchProjectDate {
+    height: 28px;
+    line-height: 28px;
+    font-size: 14px;
+    border: 1px solid #95B8E7;
+    border-radius: 10%;
+}
+
+
+/* end conditions and operators */
+
+
+/* start table */
+
+
+/* 设置表头样式 */
+
+.datagrid-header {
+    background: #36C0DA;
+    height: 40px;
+    color: #fff;
+    line-height: 40px;
+}
+
+
+/* end table */
+
+
+/* start dialog */
+
+#dlg .ftitle {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 40px;
+}
+
+#dlg div.pitem {
+    margin: 10px auto;
+}
+
+#dlg div.pitem label {
+    font-size: 14px;
+    color: #242424;
+    line-height: 30px;
+    padding-left: 30px;
+}
+
+#dlg div.pitem input {
+    width: 200px;
+    height: 30px;
+    line-height: 30px;
+    border-width: 1px;
+    border-radius: 4px;
+    text-indent: 20px;
+}
+
+
+/* end dialog */

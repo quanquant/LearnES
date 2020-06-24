@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>项目管理</title>
+    <link rel="stylesheet" href="js/jquery-easyui-1.8.1/themes/icon.css" />
+    <link rel="stylesheet" href="js/jquery-easyui-1.8.1/themes/default/easyui.css" />
+    <link rel="stylesheet" href="css/project_management_easyui.css" />
+    <script src="js/laydate/laydate.js"></script>
+    <script src="js/config.js"></script>
+</head>
+<!-- 表头颜色 -->
+<style>
+    .datagrid-header-row td {
+        background-color: #36C0DA;
+        color: #fff
+    }
+    
+    TR {
+        display: block;
+        /*将tr设置为块体元素*/
+        margin: 10px 0;
+        /*设置tr间距为2px*/
+    }
+</style>
+
+<body>
+    <div id="wrap">
+        <div id="operation" class="clearfixed">
+            <div class="conditions FL">
+                <div class="condition FL">
+                    <label for="">单位：</label>
+                    <input type="text" id="searchUnitId" style="width:120px;" />
+                </div>
+                <div class="condition FL">
+                    <label for="">建设性质：</label>
+                    <input type="text" id="searchBuildId" style="width:100px;" />
+                </div>
+                <div class="condition FL">
+                    <label for="">年份：</label>
+                    <input type="text" class="year" id="searchProjectDate" style="width:100px;" readonly/>
+                </div>
+                <div class="condition FL">
+                    <label for="">项目编码：</label>
+                    <input type="text" id="searchProjectId" style="width:120px;" />
+                </div>
+                <div class="condition FL">
+                    <label for="">项目名称：</label>
+                    <input type="text" id="searchProjectName" style="width:120px;" />
+                </div>
+            </div>
+            <div class="buttons FL" style="margin-left: 10px;">
+                <a href="#" class="btn easyui-linkbutton" onclick="toSearch()">查询</a>
+                <a href="#" class="btn easyui-linkbutton" onclick="add1()">新增</a>
+                <a href="#" class="btn easyui-linkbutton" onclick="edit()">修改</a>
+                <a href="#" class="btn easyui-linkbutton" onclick="del()">删除</a>
+                <a href="#" class="btn easyui-linkbutton" onclick="save()">保存</a>
+            </div>
+        </div>
+        <!--<div id="grid " style="width:625px; "></div>-->
+        <div id="grid" style="width:100%; "></div>
+        <!-- 添加项目的表单，默认是隐藏的 -->
+        <div id="winAdd" class="easyui-window " title="添加项目 " style="width: 400px; height: 250px;margin: auto auto; " data-options="iconCls: 'icon-save',modal:true,closed:true ">
+            <form id="formAdd" method="post ">
+                <TABLE cellSpacing=0 cellPadding=5 border="0" style="margin-left: 50px;">
+                    <TR>
+                        <td>项目名称 ：</td>
+                        <td><input type="text" id="addProjectName" name="projectName" required="true" style="width:200px;"></td>
+                    </TR>
+                    <TR>
+                        <td>所属单位 ：</td>
+                        <td><input class="easyui-combotree " id="addUnit" name="unitId" required="true" style="width:200px;"></td>
+                    </TR>
+
+                    <TR>
+                        <td>建筑性质 ：</td>
+                        <td><input class="easyui-combobox " id="addBuildProperties" name="buildId" required="true" editable="false"style="width:200px;"/>
+                        </td>
+                    </TR>
+                    <!-- <TR>
+                        <td>&nbsp;&nbsp;&nbsp;&nbsp;计划值 ：</td>
+                        <td><input class="easyui-input " id="addPlanValue" type="text" name="planValue" required="true"></td>
+                    </TR> -->
+                </TABLE>
+                <div style="text-align:center;padding:5px">
+                    <a href="#" class="btn easyui-linkbutton" onclick="add()">确认添加</a>
+                    <a href="#" class="easyui-linkbutton" onclick="clearForm()">重置</a>
+                </div>
+            </form>
+        </div>
+
+
+        <!-- 修改项目的表单，默认是隐藏的 -->
+        <div id="winUpdate" class="easyui-window " title="修改项目" style="width: 400px; height: 300px " data-options="iconCls: 'icon-save',modal:true,closed:true ">
+
+            <form id="formUpdate" method="post">
+                <TABLE cellSpacing=0 cellPadding=5 border=0 style="margin-left: 50px;">
+                    <tr>
+                        <td>项目编号 ：</td>
+                        <td>
+                            <input type="text" id="updateProjectId" maxLength=100 name="projectId" readonly="readonly"style="width:200px;">
+                        </td>
+                    </tr>
+                    <TR>
+                        <td>项目名称 ：</td>
+                        <td><input type="text" id="updateProjectName" name="projectName" required="true"style="width:200px;"></td>
+                    </TR>
+                    <TR>
+                        <td>所属单位 ：</td>
+                        <td><input class="easyui-combotree " id="updateUnitId" name="unitId" required="true"style="width:200px;"></td>
+                    </TR>
+                    <TR>
+                        <td>建筑性质 ：</td>
+                        <td><input class="easyui-combobox " id="updateBuildId" name="buildId" required="true" editable="false"style="width:200px;" />
+                        </td>
+                    </TR>
+
+                </TABLE>
+                <div style="text-align:center;padding:5px">
+                    <a href="#" class="btn easyui-linkbutton" onclick="update()">确认修改</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+<script type="text/javascript " src="js/jquery-easyui-1.8.1/jquery.min.js "></script>
+<script type="text/javascript " src="js/jquery-easyui-1.8.1/jquery.easyui.min.js "></script>
+<script type="text/javascript " src="js/jquery-easyui-1.8.1/locale/easyui-lang-zh_CN.js "></script>
+<script type="text/javascript " src="js/index.js "></script>
+
+</html>
