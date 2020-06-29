@@ -2,6 +2,7 @@ package com.bjtl.projectmanagement.mapper;
 
 import com.bjtl.projectmanagement.model.TreeNodes;
 import com.bjtl.projectmanagement.model.UnitDO;
+import com.bjtl.projectmanagement.model.UnitVO;
 
 import java.util.List;
 import java.util.Map;
@@ -25,4 +26,6 @@ public interface UnitMapper {
     int updateByPrimaryKey(UnitDO record);
 
     List<TreeNodes> listTreeNode(Integer id);
+
+    List<UnitVO> listAllTreeNode();
 }

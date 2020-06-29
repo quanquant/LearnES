@@ -44,7 +44,6 @@
     <insert id="insert" parameterType="com.bjtl.projectmanagement.model.ProjectDO">
         <selectKey keyProperty="projectId" keyColumn="PROJECT_ID" resultType="integer" order="BEFORE">
             SELECT SEQ_PROJECT.nextval from DUAL
-            -- select nvl(max(PROJECT_ID),0)+1 from SEQ_PROJECT
         </selectKey>
         insert into PM_PROJECT (PROJECT_ID, UNIT_ID, BUILD_ID,
         PROJECT_NAME, PLAN_VALUE, PROJECT_DATE
@@ -156,7 +155,7 @@
                 and PM_PROJECT.BUILD_ID=#{buildId,jdbcType=DECIMAL}
             </if>
         </where>
-        order by PROJECT_DATE desc
+        order by PROJECT_ID desc
     </select>
 
     <delete id="deleteBatchProjects" parameterType="integer">
@@ -165,4 +164,12 @@
             #{ids}
         </foreach>
     </delete>
+
+    <select id="selectByKeyForVO" parameterType="integer" resultMap="BaseResultMap2">
+        select
+        <include refid="Base_Column_List2"/>
+        from PM_PROJECT INNER join PM_BUILD_PROPERTIES ON PM_PROJECT.BUILD_ID = PM_BUILD_PROPERTIES.BUILD_ID
+        INNER join PM_UNIT ON PM_PROJECT.UNIT_ID = PM_UNIT.UNIT_ID
+        where PROJECT_ID = #{projectId,jdbcType=DECIMAL}
+    </select>
 </mapper>

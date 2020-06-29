@@ -1,5 +1,5 @@
-# redis的配置
 spring:
+  # redis的配置
   redis:
     host: 127.0.0.1
     port: 6379
@@ -8,17 +8,24 @@ spring:
         max-active: 25
         max-idle: 20
         min-idle: 10
+  # 配置连接Oracle数据库
   datasource:
     url: jdbc:oracle:thin:@localhost:1521:orcl
     username: scott
     password: scott
     driver-class-name: oracle.jdbc.driver.OracleDriver
+# 配置服务器
 server:
   servlet:
     context-path: /ProjectManagement
   port: 8080
   tomcat:
     max-http-post-size: 50000000
+# MyBatis
 mybatis:
   mapper-locations:
   - classpath:mapper/*.xml
+ES:
+  clustername: ceshi-elasticsearch
+  host: 127.0.0.1
+  port: 9301

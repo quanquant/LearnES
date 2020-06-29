@@ -10,5 +10,5 @@ import java.util.List;
  * @Date: 2020/06/22
  **/
 public interface BuildPropertiesService {
-    List<BuildPropertiesVO> listBuildProperties();
+    Object listBuildProperties();
 }

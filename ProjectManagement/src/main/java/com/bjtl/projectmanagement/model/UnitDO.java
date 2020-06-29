@@ -44,4 +44,13 @@ public class UnitDO {
     public void setUnitParentId(Integer unitParentId) {
         this.unitParentId = unitParentId;
     }
+
+    @Override
+    public String toString() {
+        return "UnitDO{" +
+                "unitId=" + unitId +
+                ", unitName='" + unitName + '\'' +
+                ", unitParentId=" + unitParentId +
+                '}';
+    }
 }

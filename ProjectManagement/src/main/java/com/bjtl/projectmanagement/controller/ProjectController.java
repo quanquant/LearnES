@@ -1,9 +1,7 @@
 package com.bjtl.projectmanagement.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.bjtl.projectmanagement.model.BuildPropertiesVO;
 import com.bjtl.projectmanagement.model.ProjectDO;
-import com.bjtl.projectmanagement.model.ProjectVO;
 import com.bjtl.projectmanagement.model.TreeNodes;
 import com.bjtl.projectmanagement.service.BuildPropertiesService;
 import com.bjtl.projectmanagement.service.ProjectService;
@@ -14,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.ServletResponse;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +25,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("project")
 public class ProjectController {
+
     @Autowired
     private ProjectService projectService;
 
@@ -55,9 +54,14 @@ public class ProjectController {
      */
     @RequestMapping("getTreeNode")
     public List<TreeNodes> getTreeNode() {
-        List<TreeNodes> treeNodesList = unitService.listTreeNode(-1);
+        List<TreeNodes> treeNodesList =  unitService.listTreeNode(-1);
         // 先给出一个根节点，然后再以跟节点为参数进行递归
         return getChildrenNodeList(treeNodesList);
+    }
+
+    @RequestMapping("getTreeNodeByES")
+    public List<TreeNodes> getTreeNodeByES() {
+        return unitService.listTreeNodeByES(-1);
     }
 
     /**
@@ -66,11 +70,8 @@ public class ProjectController {
      * @return 建设性质下拉框数据
      */
     @RequestMapping("getBuildProperties")
-    public List<BuildPropertiesVO> getBuildProperties() {
-        List<BuildPropertiesVO> list = buildPropertiesService.listBuildProperties();
-        for (BuildPropertiesVO buildPropertiesVO : list) {
-            System.out.println(buildPropertiesVO);
-        }
+    public Object getBuildProperties() {
+        Object list = buildPropertiesService.listBuildProperties();
         return list;
     }
 
@@ -81,7 +82,7 @@ public class ProjectController {
      * @return 返回给前端的状态
      */
     @RequestMapping("addProjects")
-    public Map<String, Object> addProjects(ProjectDO projectDO) {
+    public Map<String, Object> addProjects(ProjectDO projectDO) throws InvocationTargetException, IllegalAccessException {
         System.out.println("添加进来了");
         Map<String, Object> outMap = new HashMap<>();
         ProjectDO project = projectService.getProjectByName(projectDO.getProjectName());
@@ -106,19 +107,24 @@ public class ProjectController {
      * @return 返回给前端的状态
      */
     @RequestMapping("updateProjects")
-    public Map<String, Object> updateProjects(ProjectDO projectDO) {
+    public Map<String, Object> updateProjects(ProjectDO projectDO) throws InvocationTargetException, IllegalAccessException {
         System.out.println(projectDO);
         Map<String, Object> outMap = new HashMap<>();
         ProjectDO project = projectService.getProjectByName(projectDO.getProjectName());
-        if (null != project && !projectDO.getProjectName().equals(project.getProjectName())) {
-            // 项目名称已存在
-            outMap.put("status", 1);
-        } else {
-            ProjectDO projectDO1 = projectService.updateProject(projectDO);
-            if (null != projectDO1) {
-                // 修改成功
-                outMap.put("status", 2);
+
+        // 根据项目名称查询，项目不为空，且项目名与当前修改项目不相同
+        if (null != project) {
+            ProjectDO projectDO1 = projectService.getProjectById(projectDO.getProjectId());
+            if (!projectDO.getProjectName().equals(projectDO1.getProjectName())) {
+                // 项目名称已存在
+                outMap.put("status", 1);
+                return outMap;
             }
+        }
+        ProjectDO projectDO1 = projectService.updateProject(projectDO);
+        if (null != projectDO1) {
+            // 修改成功
+            outMap.put("status", 2);
         }
         return outMap;
     }
@@ -135,10 +141,10 @@ public class ProjectController {
         //接收对象数组
         System.out.println(list);
         int flag = projectService.updatePlanValue(list);
-        if (flag != 0){
-            outMap.put("status",2);
-        }else {
-            outMap.put("status",1);
+        if (flag != 0) {
+            outMap.put("status", 2);
+        } else {
+            outMap.put("status", 1);
         }
         return outMap;
     }
@@ -151,7 +157,7 @@ public class ProjectController {
      */
     public List<TreeNodes> getChildrenNodeList(List<TreeNodes> treeList) {
         for (TreeNodes nodes : treeList) {
-            List<TreeNodes> childrenNodeList = unitService.listTreeNode(nodes.getId());
+            List<TreeNodes> childrenNodeList =  unitService.listTreeNode(nodes.getId());
             // 递归出口，必须要有，不然就一直循环了
             if (childrenNodeList.isEmpty()) {
 
@@ -162,9 +168,9 @@ public class ProjectController {
                 }
             }
         }
-        System.out.println(JSON.toJSONString(treeList));
         return treeList;
     }
+
 
     @RequestMapping("deleteProjects")
     public Map<String, Object> deleteProjects(Integer[] ids) {
@@ -178,6 +184,19 @@ public class ProjectController {
         } else {
             outMap.put("status", 1);
         }
+        return outMap;
+    }
+
+    @RequestMapping("getStatisticsData")
+    public Map<String,Object> getStatisticsData(@RequestParam(required = false) Map<String,Object> map){
+        int year = 0;
+        if (null != map.get("projectDate")){
+            year = Integer.parseInt(map.get("projectDate").toString());
+        }
+        List list = projectService.getStatisticsData(year);
+        Map<String, Object> outMap = new HashMap<>();
+
+        // 省份名称 和 省份内计划值总和
         return outMap;
     }
 }

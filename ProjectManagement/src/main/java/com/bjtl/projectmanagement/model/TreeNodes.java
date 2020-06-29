@@ -19,6 +19,11 @@ public class TreeNodes {
     public TreeNodes() {
     }
 
+    public TreeNodes(Integer id, String text) {
+        this.id = id;
+        this.text = text;
+    }
+
     public TreeNodes(Integer id, String text, List<TreeNodes> children) {
         this.id = id;
         this.text = text;

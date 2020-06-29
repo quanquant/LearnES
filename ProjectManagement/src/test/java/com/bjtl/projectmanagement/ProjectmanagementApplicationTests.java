@@ -1,5 +1,6 @@
 package com.bjtl.projectmanagement;
 
+import com.bjtl.projectmanagement.model.ProjectDO;
 import com.bjtl.projectmanagement.model.ProjectVO;
 import com.bjtl.projectmanagement.service.ProjectService;
 import org.junit.Test;
@@ -17,6 +18,12 @@ public class ProjectmanagementApplicationTests {
     @Autowired
     ProjectService projectService;
 
+   /* @Test
+    public void test(){
+        String projectName = "项目二";
+        ProjectDO projectDO= projectService.getProjectByName(projectName);
+        System.out.println(projectDO);
+    }*/
 //    @Test
 //    public void contextLoads() {
 //        List<ProjectVO> list = projectService.listProjects(null);

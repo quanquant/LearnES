@@ -2,7 +2,9 @@ package com.bjtl.projectmanagement.service;
 
 import com.bjtl.projectmanagement.model.ProjectDO;
 import com.bjtl.projectmanagement.model.ProjectVO;
+import com.bjtl.projectmanagement.model.Statistic;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +16,7 @@ import java.util.Map;
 public interface ProjectService {
     ProjectDO getProjectById(Integer prjectId);
 
-    ProjectDO getProjectByName(String projectName);
+    ProjectDO getProjectByName(String projectName) throws InvocationTargetException, IllegalAccessException;
 
     Map<String,Object> listProjects(Map<String,Object> map);
 
@@ -25,4 +27,8 @@ public interface ProjectService {
     int deleteBatchProject(Integer[] ids);
 
     int updatePlanValue(List<ProjectDO> list);
+
+    List<ProjectVO>  listAllProject();
+
+    List<Statistic> getStatisticsData(int year);
 }

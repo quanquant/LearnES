@@ -26,6 +26,8 @@ public interface ProjectMapper {
 
     List<ProjectVO> listProject(Map<String,Object> map);
 
+    ProjectVO selectByKeyForVO(Integer projectId);
+
     ProjectDO selectByProjectName(String projectName);
 
     int deleteBatchProjects(Integer[] ids);

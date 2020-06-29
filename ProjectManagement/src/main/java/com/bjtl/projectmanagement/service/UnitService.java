@@ -3,7 +3,6 @@ package com.bjtl.projectmanagement.service;
 import com.bjtl.projectmanagement.model.TreeNodes;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: 单位业务层接口
@@ -12,4 +11,6 @@ import java.util.Map;
  **/
 public interface UnitService {
     List<TreeNodes> listTreeNode(Integer id);
+
+    List<TreeNodes> listTreeNodeByES(Integer id);
 }

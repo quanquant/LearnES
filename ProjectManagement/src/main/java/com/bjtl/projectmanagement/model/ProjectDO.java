@@ -1,5 +1,6 @@
 package com.bjtl.projectmanagement.model;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -8,7 +9,7 @@ import java.util.Date;
  *  @Author: leitianquan
  *  @Date: 2020/06/20
  */
-public class ProjectDO {
+public class ProjectDO  {
     /**
      * 项目编号
      */
