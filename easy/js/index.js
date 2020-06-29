@@ -72,10 +72,10 @@ $(function() {
                     width: '0%',
                     title: '年份',
                     align: 'center',
-                    formatter: function(value) {
-                        var year = value.substr(0, 4);
-                        return year;
-                    },
+                    // formatter: function(value) {
+                    //     var year = value.substr(0, 4);
+                    //     return year;
+                    // },
                     hidden:'true'
                 }, 
                 {field:'unitId', title: '',width:'0%',hidden:'true'},
@@ -99,7 +99,7 @@ $(function() {
         ],
         onLoadSuccess: function(data){
             // 表格加载结束，汇总行计算数据
-            $("#planValueTitle").html(collectPlanValue());
+            $("#planValueTitle").html(collectPlanValue().toFixed(2));
         },
         onClickRow:function(rowIndex, rowData) {
 			row = rowData.projectId;
@@ -122,7 +122,7 @@ $(function() {
         },
         // 关闭编辑器后执行
         onAfterEdit: function (index, row, changes) { // 关闭编辑器后触发
-            $("#planValueTitle").html(collectPlanValue());
+            $("#planValueTitle").html(collectPlanValue().toFixed(2));
             // 将编辑后的计划值和对应的项目编号添加到数组
             setPlanArray(row.projectId,row.planValue);
         }
@@ -132,7 +132,7 @@ $(function() {
     setStyle();
     //初始化单位--树形下拉框
     $.ajax({
-        url: requestIP + '/project/getTreeNode',
+        url: requestIP + '/project/getTreeNodeByES',
         dataType: 'json',
         success: function(data) {
             $('#searchUnitId').combotree({
@@ -192,9 +192,17 @@ $(function() {
 // 多条件查询
 function toSearch() {
     console.log("搜索进来了");
+    var unitId = $('#searchUnitId').val();
+    if(unitId ==0){
+        unitId=null
+    }
+    var buildId = $('#searchBuildId').val();
+    if(buildId==0){
+        buildId=null
+    }
     var queryParams = $('#grid').datagrid('options').queryParams;
-    queryParams.buildId = $('#searchBuildId').val();
-    queryParams.unitId = $('#searchUnitId').val();
+    queryParams.buildId = buildId;
+    queryParams.unitId = unitId;
     queryParams.projectDate = $('#searchProjectDate').val();
     queryParams.projectName = $('#searchProjectName').val();
     queryParams.projectId = $('#searchProjectId').val();
@@ -235,8 +243,8 @@ function save(){
             } else {
                 $.messager.alert('温馨提示',"计划值修改成功！");
                 planArray.length = 0;
-                // 重新加载数据:
-                $("#grid").datagrid("reload");
+                toSearch();
+                
             } 
         }
     })
@@ -289,7 +297,7 @@ function add() {
             } else if (data.status == 2) {
                 $.messager.alert('温馨提示',"项目添加成功")
                 $("#winAdd").window("close");
-                $("#grid").datagrid("reload");
+                toSearch();
             } else {
                 $.messager.alert('温馨提示',"项目添加失败，请联系管理员解决")
             }    
@@ -388,8 +396,7 @@ function update() {
                 $.messager.alert('温馨提示',"项目修改成功");
                 // 关闭窗口:
                 $("#winUpdate").window("close");
-                // 重新加载数据:
-                $("#grid").datagrid("reload");
+                toSearch();
             } else {
                 $.messager.alert('温馨提示',"项目修改失败，请联系管理员解决")
             }  
@@ -422,8 +429,7 @@ function del(){
                             $.messager.alert('温馨提示',"项目删除失败，请稍后重试！")
                         } else {
                             $.messager.alert('温馨提示',"项目删除成功！");
-                            // 重新加载数据:
-                            $("#grid").datagrid("reload");
+                            toSearch();
                         } 
                     }
                 })

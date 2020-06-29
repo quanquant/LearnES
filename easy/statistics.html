@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>项目管理计划值展示</title>
+    <link rel="stylesheet" href="js/jquery-easyui-1.8.1/themes/icon.css" />
+    <link rel="stylesheet" href="js/jquery-easyui-1.8.1/themes/default/easyui.css" />
+    <link rel="stylesheet" href="css/project_management_easyui.css">
+    <script src="js/echarts.min.js"></script>
+    <script src="js/china.js"></script>
+    <script src="js/laydate/laydate.js"></script>
+    <script src="js/config.js"></script>
+    <style>
+        .year {
+            height: 28px;
+            line-height: 28px;
+            font-size: 14px;
+            border: 1px solid #95B8E7;
+            border-radius: 10%;
+        }
+        .overPicture{
+            height: 506px;
+            margin: 50px 10px; 
+            border-radius: 20px; 
+            box-shadow: 5px 5px 5px #F2F2F2 inset;
+        }
+        .picture{
+            height: 505px;
+            margin-right: 10px;
+            border-radius: 20px; 
+            border: 2px solid rgb(69, 75, 71); 
+            box-shadow: 5px 5px 5px gainsboro inset;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="margin: 10px 10px;height: 20px;">
+        <div class="FL">
+            <label for="">年份</label>
+            <input type="text" class="year" id="searchTime" style="width:150px;" readonly/>
+        </div>
+        <div class="buttons FL" style="margin-left: 10px;">
+            <a href="#" class="btn easyui-linkbutton" onclick="toSearch()">查询</a>
+        </div>
+    </div>
+
+    <div class="overPicture">
+        <div id="pie" class="picture" style="width: 33%; float: left;"></div>
+        <div id="map"  class="picture" style="width: 65%; float: right;"></div>
+    </div>
+</body>
+<script type="text/javascript " src="js/jquery-easyui-1.8.1/jquery.min.js "></script>
+<script type="text/javascript " src="js/jquery-easyui-1.8.1/jquery.easyui.min.js "></script>
+<script type="text/javascript " src="js/jquery-easyui-1.8.1/locale/easyui-lang-zh_CN.js "></script>
+<script src="js/statistics.js"></script>
+</html>
