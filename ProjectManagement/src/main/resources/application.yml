@@ -14,6 +14,7 @@ spring:
     username: scott
     password: scott
     driver-class-name: oracle.jdbc.driver.OracleDriver
+
 # 配置服务器
 server:
   servlet:

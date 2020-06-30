@@ -6,35 +6,35 @@ package com.bjtl.projectmanagement.model;
  * @Date: 2020/06/29
  **/
 public class Statistic {
-    private String unitName;
-    private String planValue;
+    private String name;
+    private String value;
 
-    public Statistic(String unitName, String planValue) {
-        this.unitName = unitName;
-        this.planValue = planValue;
+    public Statistic(String name, String value) {
+        this.name = name;
+        this.value = value;
     }
 
-    public String getUnitName() {
-        return unitName;
+    public String getName() {
+        return name;
     }
 
-    public void setUnitName(String unitName) {
-        this.unitName = unitName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getPlanValue() {
-        return planValue;
+    public String getValue() {
+        return value;
     }
 
-    public void setPlanValue(String planValue) {
-        this.planValue = planValue;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
         return "Statistic{" +
-                "unitName='" + unitName + '\'' +
-                ", planValue='" + planValue + '\'' +
+                "name='" + name + '\'' +
+                ", value='" + value + '\'' +
                 '}';
     }
 }

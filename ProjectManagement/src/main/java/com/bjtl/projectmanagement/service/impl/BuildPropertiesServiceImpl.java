@@ -29,6 +29,11 @@ public class BuildPropertiesServiceImpl implements BuildPropertiesService {
     @Autowired
     private BuildPropertiesMapper buildPropertiesMapper;
 
+    /**
+     * 获取建设性质列表
+     *
+     * @return 建设性质列表
+     */
     @Override
     @Cacheable(cacheNames = "build", key = "1")
     public Object listBuildProperties() {

@@ -39,6 +39,7 @@ public final class RedisUtil {
         }
     }
 
+
     /**
      * 根据key获取过期时间
      *
@@ -432,7 +433,6 @@ public final class RedisUtil {
             return null;
         }
     }
-
 
     /**
      * 获取list缓存的长度

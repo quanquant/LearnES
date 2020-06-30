@@ -6,7 +6,6 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
@@ -59,7 +58,6 @@ public class ElasticSearchConfig {
         private static TransportClient client = null;
 
         static {
-            System.out.println("***********************" + clusterName + host + port);
             // 配置设置对象，指定集群的名称
             Settings settings = Settings.builder().put("cluster.name", clusterName).build();
             try {

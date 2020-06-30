@@ -18,6 +18,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,6 +58,8 @@ public class InitProject implements ApplicationRunner {
         importBuildToElasticSearch(ElasticSearchInfo.INDEX_BUILD_NAME, ElasticSearchInfo.TYPE_BUILD_NAME);
         importProjectToElasticSearch(ElasticSearchInfo.INDEX_PROJECT_NAME, ElasticSearchInfo.TYPE_PROJECT_NAME);
         importUnitToElasticSearch(ElasticSearchInfo.INDEX_UNIT_NAME, ElasticSearchInfo.TYPE_UNIT_NAME);
+        // 将省份名称以list形式放入redis
+        importUnitNameToRedis();
     }
 
     /**
@@ -129,5 +132,22 @@ public class InitProject implements ApplicationRunner {
         } else {
             System.out.println(responses.getItems().length + "条数据插入完成！");
         }
+    }
+
+    /**
+     * 将省份名称以list形式放入redis中
+     */
+    public void importUnitNameToRedis() {
+        if (redisUtil.hasKey("unitNameList")){
+            redisUtil.del("unitNameList");
+        }
+        List<UnitVO> list = unitMapper.listAllTreeNode();
+        List unitNameList = new ArrayList();
+        for (UnitVO unitVO : list) {
+            if (unitVO.getParentId() ==0){
+                unitNameList.add(unitVO.getText());
+            }
+        }
+        redisUtil.lSet("unitNameList",unitNameList);
     }
 }

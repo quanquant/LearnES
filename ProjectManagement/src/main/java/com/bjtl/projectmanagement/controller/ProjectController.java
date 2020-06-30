@@ -1,7 +1,7 @@
 package com.bjtl.projectmanagement.controller;
 
-import com.bjtl.projectmanagement.model.BuildPropertiesVO;
 import com.bjtl.projectmanagement.model.ProjectDO;
+import com.bjtl.projectmanagement.model.Statistic;
 import com.bjtl.projectmanagement.model.TreeNodes;
 import com.bjtl.projectmanagement.service.BuildPropertiesService;
 import com.bjtl.projectmanagement.service.ProjectService;
@@ -54,11 +54,16 @@ public class ProjectController {
      */
     @RequestMapping("getTreeNode")
     public List<TreeNodes> getTreeNode() {
-        List<TreeNodes> treeNodesList =  unitService.listTreeNode(-1);
+        List<TreeNodes> treeNodesList = unitService.listTreeNode(-1);
         // 先给出一个根节点，然后再以跟节点为参数进行递归
         return getChildrenNodeList(treeNodesList);
     }
 
+    /**
+     * 获取单位属性下拉框数据
+     *
+     * @return 树形下拉框数据
+     */
     @RequestMapping("getTreeNodeByES")
     public List<TreeNodes> getTreeNodeByES() {
         return unitService.listTreeNodeByES(-1);
@@ -157,7 +162,7 @@ public class ProjectController {
      */
     public List<TreeNodes> getChildrenNodeList(List<TreeNodes> treeList) {
         for (TreeNodes nodes : treeList) {
-            List<TreeNodes> childrenNodeList =  unitService.listTreeNode(nodes.getId());
+            List<TreeNodes> childrenNodeList = unitService.listTreeNode(nodes.getId());
             // 递归出口，必须要有，不然就一直循环了
             if (childrenNodeList.isEmpty()) {
 
@@ -171,7 +176,12 @@ public class ProjectController {
         return treeList;
     }
 
-
+    /**
+     * 删除项目
+     *
+     * @param ids 需要删除的项目编号
+     * @return 状态
+     */
     @RequestMapping("deleteProjects")
     public Map<String, Object> deleteProjects(Integer[] ids) {
         for (Integer id : ids) {
@@ -187,16 +197,28 @@ public class ProjectController {
         return outMap;
     }
 
+    /**
+     * 获取统计图的数据
+     *
+     * @param map 查询条件，年份
+     * @return 获取状态和结果
+     */
     @RequestMapping("getStatisticsData")
-    public Map<String,Object> getStatisticsData(@RequestParam(required = false) Map<String,Object> map){
+    public Map<String, Object> getStatisticsData(@RequestParam(required = false) Map<String, Object> map) {
         int year = 0;
-        if (null != map.get("projectDate")){
+        if (null != map.get("projectDate") && !"".equals(map.get("projectDate"))) {
             year = Integer.parseInt(map.get("projectDate").toString());
         }
-        List list = projectService.getStatisticsData(year);
+        List<Statistic> list = projectService.getStatisticsData(year);
         Map<String, Object> outMap = new HashMap<>();
 
-        // 省份名称 和 省份内计划值总和
+        if (null != list) {
+            // 查到了
+            outMap.put("status", 1);
+            outMap.put("list", list);
+        } else {
+            outMap.put("status", 2);
+        }
         return outMap;
     }
 }

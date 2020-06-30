@@ -31,7 +31,7 @@ public class RedisConfig extends CachingConfigurerSupport {
     RedisTemplate redisTemplate;
 
     /**
-     * 配置缓存管理器
+     * 配置缓存管理器,服务于Redis注解
      *
      * @param connectionFactory Redis连接工厂
      * @return Redis缓存管理

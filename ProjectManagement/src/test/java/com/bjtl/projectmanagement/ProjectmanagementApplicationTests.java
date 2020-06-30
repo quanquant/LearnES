@@ -18,6 +18,11 @@ public class ProjectmanagementApplicationTests {
     @Autowired
     ProjectService projectService;
 
+    @Test
+    public void test(){
+        projectService.getStatisticsData(2020);
+    }
+
    /* @Test
     public void test(){
         String projectName = "项目二";

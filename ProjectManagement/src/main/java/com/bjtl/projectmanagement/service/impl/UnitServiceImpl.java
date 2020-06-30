@@ -4,12 +4,9 @@ import com.bjtl.projectmanagement.common.ElasticSearchInfo;
 import com.bjtl.projectmanagement.config.ElasticSearchConfig;
 import com.bjtl.projectmanagement.mapper.UnitMapper;
 import com.bjtl.projectmanagement.model.TreeNodes;
-import com.bjtl.projectmanagement.model.UnitDO;
-import com.bjtl.projectmanagement.model.UnitVO;
 import com.bjtl.projectmanagement.service.UnitService;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +29,16 @@ public class UnitServiceImpl implements UnitService {
 
     @Override
     public List<TreeNodes> listTreeNode(Integer id) {
-        List<TreeNodes>  treeNodesList = unitMapper.listTreeNode(id);
+        List<TreeNodes> treeNodesList = unitMapper.listTreeNode(id);
         return treeNodesList;
     }
 
+    /**
+     * 获取单位树形下拉框的数据
+     *
+     * @param id 初始查询编号
+     * @return 单位树形下拉框的数据
+     */
     @Override
     @Cacheable(cacheNames = "unit", key = "1")
     public List<TreeNodes> listTreeNodeByES(Integer id) {

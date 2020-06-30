@@ -21,16 +21,13 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.filters.FiltersAggregator;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.*;
 
@@ -108,14 +105,13 @@ public class ProjectServiceImpl implements ProjectService {
         TransportClient client = ElasticSearchConfig.getInstance();
         Integer rows = Integer.parseInt(map.get("rows").toString());
         Integer pageCode = Integer.parseInt(map.get("page").toString());
-
+        // 移除查询条件中的页码和限制
         map.remove("page");
         map.remove("rows");
         Map<String, Object> outMap = new HashMap<>();
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-
-        int year = 0;
         // 判断是否有年份条件，若有，专门对日期设置查询
+        int year = 0;
         if (map.get("projectDate") != null && !"".equals(map.get("projectDate").toString())) {
             year = Integer.parseInt(map.get("projectDate").toString());
             String time1 = null;
@@ -133,17 +129,20 @@ public class ProjectServiceImpl implements ProjectService {
             boolQuery.must(rangequerybuilder);
             map.remove("projectDate");
         }
-
         // 判断是否有单位条件，若有 获取该单位名称加入查询条件，实现分词查询
         String unitIdString = map.get("unitId").toString();
         if (null != unitIdString && !"".equals(unitIdString)) {
             int unitId = Integer.parseInt(unitIdString);
+            /**
+             * TODO:修改为ES查询
+             * 标记人:leitianquan
+             * 2020-06-29
+             */
             UnitDO unitDO = unitMapper.selectByPrimaryKey(unitId);
             String unitName = unitDO.getUnitName();
             map.remove("unitId");
             map.put("unitName", unitName);
         }
-
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             if (entry.getValue() != "") {
                 boolQuery.must(QueryBuilders.termQuery(entry.getKey(), entry.getValue()));
@@ -153,7 +152,6 @@ public class ProjectServiceImpl implements ProjectService {
         SearchResponse searchResponse = client.prepareSearch(ElasticSearchInfo.INDEX_PROJECT_NAME).setTypes(ElasticSearchInfo.TYPE_PROJECT_NAME).setQuery(boolQuery)
                 .setFrom((pageCode - 1) * rows).setSize(rows).addSort("projectId", SortOrder.DESC).get();
         SearchHit[] hits = searchResponse.getHits().getHits();
-
         if (hits != null && hits.length > 0) {
             List<Map<String, Object>> list = new ArrayList<>();
             for (SearchHit searchHit : hits) {
@@ -169,6 +167,11 @@ public class ProjectServiceImpl implements ProjectService {
         return outMap;
     }
 
+    /**
+     * 添加项目
+     * @param projectDO 接收的项目对象
+     * @return 项目对象
+     */
     @Override
     public ProjectDO saveProject(ProjectDO projectDO) {
         projectDO.setProjectDate(new Date());
@@ -180,8 +183,8 @@ public class ProjectServiceImpl implements ProjectService {
             System.out.println("添加成功：" + projectDO);
             ProjectVO projectVO = projectMapper.selectByKeyForVO(projectDO.getProjectId());
             String unitParentName = setUnitName(projectVO.getUnitId());
-            if (null != unitParentName){
-                projectVO.setUnitName(setUnitName(projectVO.getUnitId())+projectVO.getUnitName());
+            if (null != unitParentName) {
+                projectVO.setUnitName(setUnitName(projectVO.getUnitId()) + projectVO.getUnitName());
             }
             redisUtil.hset(cacheName, (projectDO.getProjectId()).toString(), JSON.toJSONString(projectVO));
             // 2. 将数据存入ES
@@ -191,6 +194,11 @@ public class ProjectServiceImpl implements ProjectService {
         return null;
     }
 
+    /**
+     * 更新项目
+     * @param projectDO 接收的项目对象
+     * @return 更新之后的项目对象
+     */
     @Override
     public ProjectDO updateProject(ProjectDO projectDO) {
         int flag = projectMapper.updateByPrimaryKeySelective(projectDO);
@@ -199,8 +207,8 @@ public class ProjectServiceImpl implements ProjectService {
             // 1. 直接写入redis 不需要判断是否存在 存在则直接覆盖
             ProjectVO projectVO = projectMapper.selectByKeyForVO(projectDO.getProjectId());
             String unitParentName = setUnitName(projectVO.getUnitId());
-            if (null != unitParentName){
-                projectVO.setUnitName(setUnitName(projectVO.getUnitId())+projectVO.getUnitName());
+            if (null != unitParentName) {
+                projectVO.setUnitName(setUnitName(projectVO.getUnitId()) + projectVO.getUnitName());
             }
             redisUtil.hset(cacheName, (projectDO.getProjectId()).toString(), JSON.toJSONString(projectVO));
             // 2. 写入ES
@@ -210,6 +218,11 @@ public class ProjectServiceImpl implements ProjectService {
         return null;
     }
 
+    /**
+     * 批量删除对象
+     * @param ids 批量删除的id数组
+     * @return 删除成功返回1，失败返回0
+     */
     @Override
     public int deleteBatchProject(Integer[] ids) {
         int flag = projectMapper.deleteBatchProjects(ids);
@@ -229,6 +242,11 @@ public class ProjectServiceImpl implements ProjectService {
         return flag;
     }
 
+    /**
+     * 修改计划值
+     * @param list 接收的带有计划值和项目编号的列表
+     * @return 修改成功返回1 否则返回0
+     */
     @Override
     public int updatePlanValue(List<ProjectDO> list) {
         int flag = 0;
@@ -240,8 +258,8 @@ public class ProjectServiceImpl implements ProjectService {
                 // 1. 修改Redis中的, 从数据库中根据项目编号查询该条数据，存入Redis中
                 ProjectVO projectVO = projectMapper.selectByKeyForVO(projectDO.getProjectId());
                 String unitParentName = setUnitName(projectVO.getUnitId());
-                if (null != unitParentName){
-                    projectVO.setUnitName(setUnitName(projectVO.getUnitId())+projectVO.getUnitName());
+                if (null != unitParentName) {
+                    projectVO.setUnitName(setUnitName(projectVO.getUnitId()) + projectVO.getUnitName());
                 }
                 redisUtil.hset(cacheName, (projectVO.getProjectId()).toString(), JSON.toJSONString(projectDO));
                 // 2. 修改ES中的数据
@@ -251,36 +269,75 @@ public class ProjectServiceImpl implements ProjectService {
         return flag;
     }
 
+    /**
+     * 获取所有的项目数据，为启动将数据放入ES服务
+     * @return 项目列表
+     */
     @Override
     public List<ProjectVO> listAllProject() {
         List<ProjectVO> list = projectMapper.listProject(null);
         for (ProjectVO projectVO : list) {
             Integer unitId = projectVO.getUnitId();
-            if (null != setUnitName(unitId)){
-                projectVO.setUnitName( setUnitName(unitId)+ projectVO.getUnitName());
+            if (null != setUnitName(unitId)) {
+                projectVO.setUnitName(setUnitName(unitId) + projectVO.getUnitName());
             }
         }
         return list;
     }
 
+    /**
+     * 获取统计数据
+     * @param year 查询的年份
+     * @return 数据列表
+     */
     @Override
     public List<Statistic> getStatisticsData(int year) {
-        List<Statistic> list = new ArrayList();
         TransportClient client = ElasticSearchConfig.getInstance();
-        // 若为0，则查询所有数据
-        if(year ==0){
-
-        }else {
-            // 根据省份分组，求省份内计划组总数
-            TermsAggregationBuilder termsBuilder = AggregationBuilders.terms("unitList").field("unitName");
-            AggregationBuilder aggregationBuilder1 = AggregationBuilders.avg("planValueSum").field("planValue");
-            AggregationBuilder aggregationBuilder = AggregationBuilders.filters("filter",
-                    new FiltersAggregator.KeyedFilter("year", QueryBuilders.termQuery("interests", "changge")),
-                    new FiltersAggregator.KeyedFilter("youyong", QueryBuilders.termQuery("interests", "youyong")));
+        // 从redis中获取省份列表
+        List unitnameList = redisUtil.lGet("unitNameList", 0, -1);
+        List<Statistic> statisticList = new ArrayList<>();
+        for (Object o : unitnameList) {
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+            // 日期查询
+            String time1 = null;
+            String time2 = null;
+            if (year != 0) {
+                try {
+                    // 获取查询年的第一天和最后一天，转化成时间戳
+                    time1 = DateUtil.dateToStamp(DateUtil.getYearFirst(year));
+                    time2 = DateUtil.dateToStamp(DateUtil.getYearLast(year));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                RangeQueryBuilder rangequerybuilder = QueryBuilders
+                        .rangeQuery("projectDate")
+                        .from(time1).to(time2);
+                boolQuery.must(rangequerybuilder);
+            }
+            String unitName = o.toString();
+            // 前缀查询
+            QueryBuilder queryBuilder = QueryBuilders.prefixQuery("unitName", unitName);
+            boolQuery.must(queryBuilder);
+            // 执行查询
+            SearchResponse searchResponse = client.prepareSearch(ElasticSearchInfo.INDEX_PROJECT_NAME).setTypes(ElasticSearchInfo.TYPE_PROJECT_NAME).setQuery(boolQuery).get();
+            SearchHit[] hits = searchResponse.getHits().getHits();
+            if (hits != null && hits.length > 0) {
+                double sum = 0;
+                for (SearchHit searchHit : hits) {
+                    sum += (double) searchHit.getSourceAsMap().get("planValue");
+                }
+                BigDecimal bg = new BigDecimal(sum).setScale(2, RoundingMode.UP);
+                statisticList.add(new Statistic(unitName.replaceAll("省",""), String.valueOf(bg.doubleValue())));
+            }
         }
-        return null;
+        return statisticList;
     }
 
+    /**
+     * 获取对应单位编号中项目的单位的省级名称
+     * @param unitId 需要查询的单位编号
+     * @return 返回省级名称
+     */
     public String setUnitName(int unitId) {
         String unitParentName = null;
         String unitName = null;
