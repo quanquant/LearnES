@@ -1,0 +1,33 @@
+server:
+  servlet:
+    context-path: /LogManagement
+  port: 8081
+  tomcat:
+    max-http-post-size: 50000000
+spring:
+  # redis
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    jedis:
+      pool:
+        max-active: 25
+        max-idle: 20
+        min-idle: 10
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:orcl
+    username: scott
+    password: scott
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+  # MyBatis
+  mybatis:
+    mapper-locations:
+      - classpath:mapper/*.xml
+ES:
+  clustername: ceshi-elasticsearch
+  host: 127.0.0.1
+  port: 9301
+#日志配置
+logging:
+  level:
+    com.tw: debug
