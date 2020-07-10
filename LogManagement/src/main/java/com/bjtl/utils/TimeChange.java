@@ -10,22 +10,32 @@ import java.util.Date;
  * @Date: 2020/07/09
  **/
 public  class TimeChange {
+    /**
+     * 将时间转为UNIX时间格式
+     * @param time
+     * @return
+     */
     public static String timeToUnixTime(String time){
         String newTime = time.substring(0,10)+"T"+time.substring(11)+".000Z";
         return newTime;
     }
 
-    public static String getMinTodayTime(){
-        Date currentDate = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String todayDate = simpleDateFormat.format(currentDate);
+    /**
+     * 获取一天的开始时间
+     * @param todayDate
+     * @return
+     */
+    public static String getMinTodayTime(String todayDate){
         String startToday = TimeChange.timeToUnixTime(todayDate+" 00:00:00");
         return startToday;
     }
-    public static String getMaxTodayTime(){
-        Date currentDate = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String todayDate = simpleDateFormat.format(currentDate);
+
+    /**
+     *  获取一天的结束时间
+     * @param todayDate
+     * @return
+     */
+    public static String getMaxTodayTime(String todayDate){
         String endToday =TimeChange.timeToUnixTime(todayDate+" 23:59:59");
         return endToday;
     }

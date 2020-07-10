@@ -4,15 +4,12 @@ import com.bjtl.config.ElasticSearchConfig;
 import com.bjtl.controller.LogController;
 import com.bjtl.service.LogService;
 import com.bjtl.utils.TimeChange;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -21,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.management.Query;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -36,9 +32,15 @@ public class LogServiceImpl implements LogService {
 
     private static TransportClient client = ElasticSearchConfig.getInstance();
 
+    /**
+     * 从ES中获取日志列表
+     * @param inMap 条件
+     * @return 日志列表，列表信息
+     */
     @Override
     public Map<String, Object> getLogList(Map<String, Object> inMap) {
         logger.info("service中条件：" + inMap);
+
         Map<String, Object> outMap = new HashMap<>();
         String indexName = inMap.get("index").toString();
         int page = Integer.parseInt(inMap.get("page").toString());
@@ -78,9 +80,14 @@ public class LogServiceImpl implements LogService {
         return outMap;
     }
 
+    /**
+     * 从ES中获取系统首页所需数据
+     * @param indexName 索引名称
+     * @return 所需数据
+     */
     @Override
     public Map<String, Object> getLogStatistic(String indexName) {
-        dateToWeek();
+        logger.info("获取日志系统首页数据");
         Map<String, Object> outMap = new HashMap<>();
         // 获取本月根据日志级别分组聚合，对应数量
         SearchResponse response = queryAggregation(indexName, TimeChange.getMinMouthTime(), TimeChange.getMaxMouthTime());
@@ -89,14 +96,64 @@ public class LogServiceImpl implements LogService {
             outMap.put(entry.getKey().toString(), entry.getDocCount());
         }
         // 获取今日根据日志级别分组聚合，对应数量
-        SearchResponse searchResponse = queryAggregation(indexName, TimeChange.getMinTodayTime(), TimeChange.getMaxTodayTime());
+        Date currentDate = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String todayDate = simpleDateFormat.format(currentDate);
+        SearchResponse searchResponse = queryAggregation(indexName, TimeChange.getMinTodayTime(todayDate), TimeChange.getMaxTodayTime(todayDate));
         Terms termsCurrent = searchResponse.getAggregations().get("levelTerms");
+        if( termsCurrent.getBuckets().size() ==0){
+            outMap.put("ERRORToday",0);
+            outMap.put("INFOToday",0);
+            outMap.put("DEBUGToday",0);
+            outMap.put("WARNToday",0);
+        }
         for (Terms.Bucket entry : termsCurrent.getBuckets()) {
             outMap.put(entry.getKey().toString() + "Today", entry.getDocCount());
         }
+        // 获取本周7天根据日志界别分组聚合，对应数量
+        List<Long> errorList = new ArrayList<>();
+        List<Long> infoList = new ArrayList<>();
+        List<Long> debugList = new ArrayList<>();
+        List<Long> warnList = new ArrayList<>();
+        List<String> weekList = dateToWeek();
+        for (String time : weekList) {
+            SearchResponse responseWeek = queryAggregation(indexName, TimeChange.getMinTodayTime(time), TimeChange.getMaxTodayTime(time));
+            Terms termsWeek = responseWeek.getAggregations().get("levelTerms");
+            if (termsWeek.getBuckets().size() == 0){
+                errorList.add(0L);
+                infoList.add(0L);
+                debugList.add(0L);
+                warnList.add(0L);
+            }
+            for (Terms.Bucket entry : termsWeek.getBuckets()) {
+                if ("ERROR".equals(entry.getKey().toString())) {
+                    errorList.add(entry.getDocCount());
+                }
+                if ("INFO".equals(entry.getKey().toString())) {
+                    infoList.add(entry.getDocCount());
+                }
+                if ("DEBUG".equals(entry.getKey().toString())) {
+                    debugList.add(entry.getDocCount());
+                }
+                if ("WARN".equals(entry.getKey().toString())) {
+                    warnList.add(entry.getDocCount());
+                }
+            }
+        }
+        outMap.put("errorList", errorList);
+        outMap.put("infoList", infoList);
+        outMap.put("debugList", debugList);
+        outMap.put("warnList", warnList);
         return outMap;
     }
 
+    /**
+     * 提取出公用的方法，从ES中根据日志时间范围和日志级别联合查询
+     * @param indexName 索引名称
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return ES查询返回响应
+     */
     public SearchResponse queryAggregation(String indexName, String startTime, String endTime) {
         AggregationBuilder groupByLevel = AggregationBuilders.terms("levelTerms").field("level");
         RangeQueryBuilder rangequery = QueryBuilders.rangeQuery("logTime").from(startTime).to(endTime);
@@ -106,20 +163,17 @@ public class LogServiceImpl implements LogService {
         return response;
     }
 
-    @SuppressWarnings({ "deprecation", "unchecked" })
+    @SuppressWarnings({"deprecation", "unchecked"})
     public static List<String> dateToWeek() {
         Date mdate = new Date();
-        System.out.println("mdate :" + mdate);
         // 一周的第几天
         int b = mdate.getDay();
-        System.out.println("b:  " + b);
         Date fdate;
         List<String> list = new ArrayList();
         Long fTime = mdate.getTime() - b * 24 * 3600000;
-        System.out.println("fTime: " + fTime);
         for (int a = 0; a < 7; a++) {
             fdate = new Date();
-            fdate.setTime(fTime + ((a+1) * 24 * 3600000));
+            fdate.setTime(fTime + ((a + 1) * 24 * 3600000));
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             list.add(a, simpleDateFormat.format(fdate));
         }

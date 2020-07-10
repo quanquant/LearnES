@@ -28,6 +28,6 @@ ES:
   host: 127.0.0.1
   port: 9301
 #日志配置
-logging:
-  level:
-    com.tw: debug
+#logging:
+#  level:
+#    com.tw: debug

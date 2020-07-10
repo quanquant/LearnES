@@ -29,6 +29,11 @@ public class LogController {
     @Autowired
     private LogService logService;
 
+    /**
+     * 多条件查询日志列表
+     * @param inMap 条件map
+     * @return layui要求返回的参数map
+     */
     @RequestMapping("getLogList")
     public Map<String, Object> getLogList(@RequestParam(required = false) Map<String, Object> inMap) {
         if (null != inMap.get("searchParams")) {
@@ -45,6 +50,11 @@ public class LogController {
         return logService.getLogList(inMap);
     }
 
+    /**
+     * 获取首页统计图数据
+     * @param inMap 获取需要查询的系统索引
+     * @return 统计需要的数据
+     */
     @RequestMapping("getLogStatistic")
     public Map<String,Object> getLogStatistic(@RequestParam(required = false) Map<String, Object> inMap){
         String indexName = inMap.get("index").toString();
