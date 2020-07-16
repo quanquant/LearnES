@@ -12,6 +12,9 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
@@ -34,6 +37,7 @@ public class LogServiceImpl implements LogService {
 
     /**
      * 从ES中获取日志列表
+     *
      * @param inMap 条件
      * @return 日志列表，列表信息
      */
@@ -57,7 +61,6 @@ public class LogServiceImpl implements LogService {
                     .from(startTime).to(endTime);
             boolQuery.must(rangequerybuilder);
         }
-
         if (null != inMap.get("level")) {
             boolQuery.must(QueryBuilders.matchQuery("level", inMap.get("level")));
         }
@@ -82,12 +85,12 @@ public class LogServiceImpl implements LogService {
 
     /**
      * 从ES中获取系统首页所需数据
+     *
      * @param indexName 索引名称
      * @return 所需数据
      */
     @Override
     public Map<String, Object> getLogStatistic(String indexName) {
-        logger.info("获取日志系统首页数据");
         Map<String, Object> outMap = new HashMap<>();
         // 获取本月根据日志级别分组聚合，对应数量
         SearchResponse response = queryAggregation(indexName, TimeChange.getMinMouthTime(), TimeChange.getMaxMouthTime());
@@ -101,11 +104,11 @@ public class LogServiceImpl implements LogService {
         String todayDate = simpleDateFormat.format(currentDate);
         SearchResponse searchResponse = queryAggregation(indexName, TimeChange.getMinTodayTime(todayDate), TimeChange.getMaxTodayTime(todayDate));
         Terms termsCurrent = searchResponse.getAggregations().get("levelTerms");
-        if( termsCurrent.getBuckets().size() ==0){
-            outMap.put("ERRORToday",0);
-            outMap.put("INFOToday",0);
-            outMap.put("DEBUGToday",0);
-            outMap.put("WARNToday",0);
+        if (termsCurrent.getBuckets().size() == 0) {
+            outMap.put("ERRORToday", 0);
+            outMap.put("INFOToday", 0);
+            outMap.put("DEBUGToday", 0);
+            outMap.put("WARNToday", 0);
         }
         for (Terms.Bucket entry : termsCurrent.getBuckets()) {
             outMap.put(entry.getKey().toString() + "Today", entry.getDocCount());
@@ -119,7 +122,7 @@ public class LogServiceImpl implements LogService {
         for (String time : weekList) {
             SearchResponse responseWeek = queryAggregation(indexName, TimeChange.getMinTodayTime(time), TimeChange.getMaxTodayTime(time));
             Terms termsWeek = responseWeek.getAggregations().get("levelTerms");
-            if (termsWeek.getBuckets().size() == 0){
+            if (termsWeek.getBuckets().size() == 0) {
                 errorList.add(0L);
                 infoList.add(0L);
                 debugList.add(0L);
@@ -149,9 +152,10 @@ public class LogServiceImpl implements LogService {
 
     /**
      * 提取出公用的方法，从ES中根据日志时间范围和日志级别联合查询
+     *
      * @param indexName 索引名称
      * @param startTime 开始时间
-     * @param endTime 结束时间
+     * @param endTime   结束时间
      * @return ES查询返回响应
      */
     public SearchResponse queryAggregation(String indexName, String startTime, String endTime) {
@@ -163,6 +167,11 @@ public class LogServiceImpl implements LogService {
         return response;
     }
 
+    /**
+     * 获取当前周一周的日期
+     *
+     * @return 一周的日期
+     */
     @SuppressWarnings({"deprecation", "unchecked"})
     public static List<String> dateToWeek() {
         Date mdate = new Date();
@@ -180,4 +189,65 @@ public class LogServiceImpl implements LogService {
         return list;
     }
 
+    @Override
+    public Map<String, Object> getDataByCeShi(String indexName) {
+        Map<String, Object> outMap = new HashMap<>();
+        // 获取本周7天根据日志界别分组聚合，对应数量
+        List<Long> errorList = new ArrayList<>();
+        List<Long> infoList = new ArrayList<>();
+        List<Long> debugList = new ArrayList<>();
+        List<Long> warnList = new ArrayList<>();
+        List<String> weekList = dateToWeek();
+        String startTime = TimeChange.getMinTodayTime(weekList.get(0));
+        String endTime = TimeChange.getMaxTodayTime(weekList.get(weekList.size() - 1));
+       /* String startTime = TimeChange.getMinTodayTime("2020-07-06");
+        String endTime = TimeChange.getMaxTodayTime("2020-07-12");*/
+        System.out.println(startTime + "  " + endTime);
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+        queryBuilder.must(QueryBuilders.rangeQuery("logTime").gte(startTime));
+        queryBuilder.must(QueryBuilders.rangeQuery("logTime").lte(endTime));
+        //根据时间分组统计总数
+        DateHistogramAggregationBuilder fieldBuilder = AggregationBuilders.dateHistogram("logTime").field("logTime").dateHistogramInterval(DateHistogramInterval.DAY);
+        AggregationBuilder groupByLevel = AggregationBuilders.terms("levelTerms").field("level");
+        SearchResponse response = client.prepareSearch(indexName).setQuery(queryBuilder).addAggregation(groupByLevel.subAggregation(fieldBuilder)).get();
+        Terms terms = response.getAggregations().get("levelTerms");
+        // 按级别划分 bucket.getKey()为日志级别
+        for (Terms.Bucket bucket  : terms.getBuckets()) {
+            Histogram agg = bucket.getAggregations().get("logTime");
+            // 按时间划分 entry.getKey()为时间级别
+            for (Histogram.Bucket entry : agg.getBuckets()) {
+                logger.info(bucket.getKey().toString()+"--"+entry.getKey().toString()+"--"+entry.getDocCount());
+                outMap.put(bucket.getKey().toString()+entry.getKey().toString()+UUID.randomUUID(),entry.getDocCount());
+                if ("ERROR".equals(bucket.getKey().toString())) {
+                    setListData(errorList,entry);
+                }
+                if ("INFO".equals(bucket.getKey().toString())) {
+                    setListData(infoList,entry);
+                }
+                if ("DEBUG".equals(bucket.getKey().toString())) {
+                    setListData(debugList,entry);
+                }
+                if ("WARN".equals(bucket.getKey().toString())) {
+                    setListData(warnList,entry);
+                }
+            }
+        }
+        outMap.put("errorList", errorList);
+        outMap.put("infoList", infoList);
+        outMap.put("debugList", debugList);
+        outMap.put("warnList", warnList);
+        return outMap;
+    }
+
+    public void setListData(List<Long> list, Histogram.Bucket entry){
+        List<String> weekList = dateToWeek();
+        for (String s : weekList) {
+            logger.info(s+"时间------------------------------："+entry.getKey().toString().substring(0,10));
+            if (s.equals(entry.getKey().toString().substring(0,10))){
+                list.add(entry.getDocCount());
+            }else{
+                list.add(0L);
+            }
+        }
+    }
 }

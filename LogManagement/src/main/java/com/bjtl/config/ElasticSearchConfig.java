@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
 /**
  * @Description: ES配置类，初始化操作
  * @Author: leitianquan
- * @Date: 2020/06/26
+ * @Date: 2020/07/06
  **/
 @Configuration
 public class ElasticSearchConfig {

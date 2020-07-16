@@ -1,18 +1,18 @@
 package com.bjtl.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.bjtl.service.LogService;
+import com.bjtl.webscoket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.alibaba.fastjson.JSONObject;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,9 +28,12 @@ public class LogController {
 
     @Autowired
     private LogService logService;
+    @Autowired
+    WebSocketServer webSocketServer;
 
     /**
      * 多条件查询日志列表
+     *
      * @param inMap 条件map
      * @return layui要求返回的参数map
      */
@@ -52,12 +55,28 @@ public class LogController {
 
     /**
      * 获取首页统计图数据
+     *
      * @param inMap 获取需要查询的系统索引
      * @return 统计需要的数据
      */
     @RequestMapping("getLogStatistic")
-    public Map<String,Object> getLogStatistic(@RequestParam(required = false) Map<String, Object> inMap){
+    public Map<String, Object> getLogStatistic(@RequestParam(required = false) Map<String, Object> inMap) {
         String indexName = inMap.get("index").toString();
         return logService.getLogStatistic(indexName);
+    }
+
+    @Scheduled(fixedDelay = 1000 * 2)
+    public Map<String, Object> getData() {
+        String indexName = "log_log";
+        Map<String, Object> map = logService.getLogStatistic(indexName);
+        webSocketServer.sendInfo(JSON.toJSONString(map));
+        //webSocketServer.sendInfo2(map);
+        return map;
+    }
+
+    @RequestMapping("get")
+    public Map<String,Object> get(){
+        String indexName = "log_log";
+        return logService.getDataByCeShi(indexName);
     }
 }
