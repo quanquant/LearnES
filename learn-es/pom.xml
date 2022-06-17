@@ -19,7 +19,7 @@
         <!--要手动选择es的版本号-->
         <elasticsearch.version>5.5.3</elasticsearch.version>
         <log4j2.version>2.7</log4j2.version>
-        <fastjson.version>1.2.31</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
     </properties>
 
     <dependencies>
